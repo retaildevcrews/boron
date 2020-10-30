@@ -3,7 +3,7 @@
     "tasks": [
         {
             "label": "build",
-            "command": "dotnet",
+            "command": "/home/codespace/.dotnet/dotnet",
             "type": "process",
             "args": [
                 "build",

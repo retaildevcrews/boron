@@ -8,6 +8,7 @@
             "name": ".NET Core Launch (web)",
             "type": "coreclr",
             "request": "launch",
+            "preLaunchTask": "build",
             "args": [
                 "--keyvault-name", "boron",
                 "--auth-type", "CLI"
