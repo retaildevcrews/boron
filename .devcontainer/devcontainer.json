@@ -7,7 +7,7 @@
 //    "terminal.integrated.shell.linux": "/bin/zsh"
   },
 
-  "remoteUser": "vscode",
+  "remoteUser": "codespace",
 
   // Open port 4120 by default
   "forwardPorts": [4120],

@@ -21,12 +21,9 @@ namespace CSE.Boron
         public const string CosmosUrl = "CosmosUrl";
 
         public const string AppInsightsKey = "AppInsightsKey";
-        public const string NewKeyLoadedMetric = "newKeyLoaded";
 
         // if port is changed, also update value in the Dockerfiles
         public const string Port = "4120";
-
-        public const int KeyVaultChangeCheckSeconds = 30;
 
         public const string ActorsControllerException = "ActorsControllerException";
         public const string GenresControllerException = "GenresControllerException";

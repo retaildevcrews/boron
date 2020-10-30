@@ -158,9 +158,6 @@ namespace CSE.Boron
                 // this doesn't return except on ctl-c
                 await w.ConfigureAwait(false);
 
-                // use this line instead if you want to re-read the Cosmos connection info on a timer
-                // await RunKeyRotationCheck(ctCancel, Constants.KeyVaultChangeCheckSeconds).ConfigureAwait(false);
-
                 // if not cancelled, app exit -1
                 return ctCancel.IsCancellationRequested ? 0 : -1;
             }
