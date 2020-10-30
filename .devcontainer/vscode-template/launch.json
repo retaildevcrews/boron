@@ -8,12 +8,9 @@
             "name": ".NET Core Launch (web)",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
             "args": [
-                "--keyvault-name",
-                "your_keyvault_name",
-                "--auth-type",
-                "CLI"
+                "--keyvault-name", "boron",
+                "--auth-type", "CLI"
             ],
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/src/app/bin/Debug/netcoreapp3.1/boron.dll",
@@ -26,12 +23,6 @@
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"
             }
-        },
-        {
-            "name": ".NET Core Attach",
-            "type": "coreclr",
-            "request": "attach",
-            "processId": "${command:pickProcess}"
         }
     ]
 }
