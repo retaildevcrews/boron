@@ -3,12 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Models;
+using Boron.Extensions;
 using CSE.Boron.DataAccessLayer;
 using CSE.Boron.Model;
 using Microsoft.AspNetCore.Mvc;
@@ -42,12 +43,17 @@ namespace CSE.Boron.Controllers
         /// </summary>
         /// <returns>IActionResult</returns>
         [HttpGet]
-        public async Task<IActionResult> GetMoviesAsync()
+        public async Task<IActionResult> GetMoviesAsync([FromQuery] MovieQueryParameters movieQueryParameters)
         {
+            if (movieQueryParameters == null)
+            {
+                throw new ArgumentNullException(nameof(movieQueryParameters));
+            }
+
             var endpoint = new Uri("https://<YOUR SEARCH NAME>.search.windows.net");
             var credential = new AzureKeyCredential("<YOUR API KEY>");
             var indexClient = new SearchIndexClient(endpoint, credential);
-            var srchclient = indexClient.GetSearchClient("<YOUR INDEX NAME>");
+            var searchclient = indexClient.GetSearchClient("<YOUR INDEX NAME>");
 
             var options = new SearchOptions()
             {
@@ -55,7 +61,7 @@ namespace CSE.Boron.Controllers
                 Size = 100, // PageSize
             };
 
-            var response = await srchclient
+            var response = await searchclient
                 .SearchAsync<Movie>("*", options)
                 .ConfigureAwait(false);
             Console.WriteLine("Total count: {response.Value.TotalCount}");
@@ -66,6 +72,7 @@ namespace CSE.Boron.Controllers
             // var count = response.GetRawResponse().ContentStream.Read(byteArray, 0, (int)response.GetRawResponse().ContentStream.Length - 1);
             // string converted = Encoding.UTF8.GetString(byteArray, 0, byteArray.Length);
 
+            // Iterate over the index result
             var searchResults = response.Value.GetResultsAsync();
             int count = 1;
             var movies = new List<Movie>();
@@ -81,7 +88,12 @@ namespace CSE.Boron.Controllers
                 }
             }
 
-            return Ok(movies);
+            // Create an array of movie ids from the index search
+            var movieIds = movies.Select(movie => movie.MovieId);
+
+            return await ResultHandler.Handle(
+                dal.GetMoviesAsync(movieQueryParameters), movieQueryParameters.GetMethodText(HttpContext), Constants.MoviesControllerException, logger)
+                .ConfigureAwait(false);
 
             // search=tt0385887,tt0326965,tt0069049&searchFields=movieId
             // TODO - add Azure Search query here

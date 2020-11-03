@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using CSE.Boron.Model;
 using Microsoft.Azure.Cosmos;
@@ -43,7 +44,7 @@ namespace CSE.Boron.DataAccessLayer
         /// </summary>
         /// <param name="movieQueryParameters">movie search parameters</param>
         /// <returns>List of Movies or an empty list</returns>
-        public async Task<IEnumerable<Movie>> GetMoviesAsync(MovieQueryParameters movieQueryParameters)
+        public async Task<IEnumerable<Movie>> GetMoviesAsync(MovieQueryParameters movieQueryParameters, string[] movieIds = null)
         {
             _ = movieQueryParameters ?? throw new ArgumentNullException(nameof(movieQueryParameters));
 
@@ -81,6 +82,12 @@ namespace CSE.Boron.DataAccessLayer
             {
                 movieQueryParameters.Genre = movieQueryParameters.Genre.Trim();
                 sql += " and contains(m.genreSearch, @genre, true) ";
+            }
+
+            if (movieIds != null && movieIds.Length > 0)
+            {
+                var movieIdsParameter = string.Join(", ", movieIds.Select(movieId => "'{movieId}'"));
+                sql += $" and m.id in ({movieIdsParameter}) ";
             }
 
             sql += MovieOrderBy + offsetLimit;

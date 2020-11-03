@@ -17,7 +17,7 @@ namespace CSE.Boron.DataAccessLayer
         Task<IEnumerable<Actor>> GetActorsAsync(ActorQueryParameters actorQueryParameters);
         Task<IEnumerable<string>> GetGenresAsync();
         Task<Movie> GetMovieAsync(string movieId);
-        Task<IEnumerable<Movie>> GetMoviesAsync(MovieQueryParameters movieQueryParameters);
+        Task<IEnumerable<Movie>> GetMoviesAsync(MovieQueryParameters movieQueryParameters, string[] movieIds = null);
         Task<List<string>> GetFeaturedMovieListAsync();
         Task Reconnect(Uri cosmosUrl, string cosmosKey, string cosmosDatabase, string cosmosCollection, bool force = false);
     }
