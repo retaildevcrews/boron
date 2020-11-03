@@ -44,10 +44,10 @@ namespace CSE.Boron.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMoviesAsync()
         {
-            Uri endpoint = new Uri("https://<YOUR SEARCH NAME>.search.windows.net");
-            AzureKeyCredential credential = new AzureKeyCredential("<YOUR API KEY>");
-            SearchIndexClient indexClient = new SearchIndexClient(endpoint, credential);
-            SearchClient srchclient = indexClient.GetSearchClient("<YOUR INDEX NAME>");
+            var endpoint = new Uri("https://<YOUR SEARCH NAME>.search.windows.net");
+            var credential = new AzureKeyCredential("<YOUR API KEY>");
+            var indexClient = new SearchIndexClient(endpoint, credential);
+            var srchclient = indexClient.GetSearchClient("<YOUR INDEX NAME>");
 
             var options = new SearchOptions()
             {
@@ -67,7 +67,7 @@ namespace CSE.Boron.Controllers
 
             var searchResults = response.Value.GetResultsAsync();
             int count = 1;
-            List<Movie> movies = new List<Movie>();
+            var movies = new List<Movie>();
             await foreach (SearchResult<Movie> resp in searchResults)
             {
                 Movie doc = resp.Document;
