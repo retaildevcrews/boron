@@ -1,0 +1,218 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using Azure;
+using Azure.Search.Documents;
+using Azure.Search.Documents.Indexes;
+using Azure.Search.Documents.Models;
+using CSE.Boron.Model;
+using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Threading.Tasks;
+
+namespace CSE.Boron.DataAccessLayer
+{
+    /// <summary>
+    /// Data Access Layer for CosmosDB
+    /// </summary>
+    public partial class DAL
+    {
+        // select template for Movies
+        private const string Movie2Select = "select m.id, m.partitionKey, m.movieId, m.type, m.textSearch, m.title, m.year, m.runtime, m.rating, m.votes, m.totalScore, m.genres, m.roles from m where m.type = 'Movie' ";
+        private const string Movie2OrderBy = " order by m.textSearch ASC, m.movieId ASC";
+        private const string Movie2Offset = " offset {0} limit {1}";
+        private IConfigurationRoot config;
+
+        /// <summary>
+        /// Retrieve a single Movie from CosmosDB by movieId
+        ///
+        /// Uses the CosmosDB single document read API which is 1 RU if less than 1K doc size
+        ///
+        /// Throws an exception if not found
+        /// </summary>
+        /// <param name="movieId">Movie ID</param>
+        /// <returns>Movie object</returns>
+        public async Task<Movie> GetMovie2Async(string movieId)
+        {
+            // get the partition key for the movie ID
+            // note: if the key cannot be determined from the ID, ReadDocumentAsync cannot be used.
+            // ComputePartitionKey will throw an ArgumentException if the movieId isn't valid
+            // get a movie by ID
+            return await cosmosDetails.Container.ReadItemAsync<Movie>(movieId, new PartitionKey(Movie.ComputePartitionKey(movieId))).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Get a list of Movies by search and/or filter terms
+        /// </summary>
+        /// <param name="movieQueryParameters">movie search parameters</param>
+        /// <returns>List of Movies or an empty list</returns>
+        public async Task<IEnumerable<Movie>> GetMovies2Async(MovieQueryParameters movieQueryParameters, string[] movieIds = null)
+        {
+            this.config = config as IConfigurationRoot;
+            _ = movieQueryParameters ?? throw new ArgumentNullException(nameof(movieQueryParameters));
+
+            string sql = Movie2Select;
+
+            int offset = movieQueryParameters.GetOffset();
+            int limit = movieQueryParameters.PageSize;
+
+            string offsetLimit = string.Format(CultureInfo.InvariantCulture, Movie2Offset, offset, limit);
+
+            if (!string.IsNullOrWhiteSpace(movieQueryParameters.Q))
+            {
+                movieQueryParameters.Q = movieQueryParameters.Q.Trim();
+                sql += " and contains(m.title, @q, true) ";
+            }
+
+            // if (movieQueryParameters.Year > 0)
+            // {
+            //     sql += " and m.year = @year ";
+            // }
+
+            // if (movieQueryParameters.Rating > 0)
+            // {
+            //     sql += " and m.rating >= @rating ";
+            // }
+
+            // if (!string.IsNullOrWhiteSpace(movieQueryParameters.ActorId))
+            // {
+            //     // convert to lower
+            //     movieQueryParameters.ActorId = movieQueryParameters.ActorId.Trim().ToLowerInvariant();
+            //     sql += " and array_contains(m.roles, { actorId: @actorId }, true) ";
+            // }
+
+            // if (!string.IsNullOrWhiteSpace(movieQueryParameters.Genre))
+            // {
+            //     movieQueryParameters.Genre = movieQueryParameters.Genre.Trim();
+            //     sql += " and contains(m.genreSearch, @genre, true) ";
+            // }
+
+            // if (movieIds != null && movieIds.Length > 0)
+            // {
+            //     var movieIdsParameter = string.Join(", ", movieIds.Select(movieId => "'{movieId}'"));
+            //     sql += $" and m.id in ({movieIdsParameter}) ";
+            // }
+
+            Uri endpoint = new Uri("https://boron-search.search.windows.net");
+            AzureKeyCredential credential = new AzureKeyCredential("C6BBFE20B9BD058CA1D36635F1BD9778");
+            SearchIndexClient indexClient = new SearchIndexClient(endpoint, credential);
+
+            // SearchClient srchclient = indexClient.GetSearchClient("boron3-index");
+            // string endpointUrl = config.GetValue<string>(Constants.SearchEndpoint);
+            // string key = config.GetValue<string>(Constants.SearchKey);
+            // string index = config.GetValue<string>(Constants.SearchIndex);
+            // Uri endpoint = new Uri(endpointUrl);
+            // AzureKeyCredential credential = new AzureKeyCredential(key);
+            // SearchIndexClient indexClient = new SearchIndexClient(endpoint, credential);
+            SearchClient searchclient = indexClient.GetSearchClient("boron3-index");
+
+            var options = new SearchOptions()
+            {
+                IncludeTotalCount = true, // If not set the property TotalCount is set as null
+                Size = 100, // PageSize
+            };
+
+            options.SearchFields.Add("title");
+            var response = await searchclient
+                .SearchAsync<Movie>(movieQueryParameters.Q.Trim(), options)
+                .ConfigureAwait(false);
+            Console.WriteLine("Total count: {response.Value.TotalCount}");
+
+            // Below is the raw code to re-read the raw response
+            // response.GetRawResponse().ContentStream.Position = 0;
+            // var byteArray = new byte[response.GetRawResponse().ContentStream.Length];
+            // var count = response.GetRawResponse().ContentStream.Read(byteArray, 0, (int)response.GetRawResponse().ContentStream.Length - 1);
+            // string converted = Encoding.UTF8.GetString(byteArray, 0, byteArray.Length);
+
+            // Iterate over the index result
+            var searchResults = response.Value.GetResultsAsync();
+            int count = 1;
+            var movies = new List<Movie>();
+            await foreach (SearchResult<Movie> resp in searchResults)
+            {
+                Movie doc = resp.Document;
+                var score = resp.Score;
+                movies.Add(resp.Document);
+                Console.WriteLine($"Count: {count}, Rid: {doc.Rid}, MovieId: {doc.MovieId}, Id: {doc.Id}, Score: {score}");
+                if (count++ == 50)
+                {
+                    break;
+                }
+            }
+
+            sql += Movie2OrderBy + offsetLimit;
+
+            // Parameterize fields
+            QueryDefinition queryDefinition = new QueryDefinition(sql);
+
+            if (!string.IsNullOrWhiteSpace(movieQueryParameters.Q))
+            {
+                queryDefinition.WithParameter("@q", movieQueryParameters.Q);
+            }
+
+            if (!string.IsNullOrWhiteSpace(movieQueryParameters.ActorId))
+            {
+                queryDefinition.WithParameter("@actorId", movieQueryParameters.ActorId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(movieQueryParameters.Genre))
+            {
+                // genreSearch is stored delimited with :
+                queryDefinition.WithParameter("@genre", "|" + movieQueryParameters.Genre + "|");
+            }
+
+            if (movieQueryParameters.Year > 0)
+            {
+                queryDefinition.WithParameter("@year", movieQueryParameters.Year);
+            }
+
+            if (movieQueryParameters.Rating > 0)
+            {
+                queryDefinition.WithParameter("@rating", movieQueryParameters.Rating);
+            }
+
+            return await InternalCosmosDBSqlQuery<Movie>(queryDefinition).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Get the featured movie list from Cosmos
+        /// </summary>
+        /// <returns>List</returns>
+        public async Task<List<string>> GetFeaturedMovie2ListAsync()
+        {
+            List<string> list = new List<string>();
+
+            string sql = "select m.movieId, m.weight from m where m.type = 'Featured'";
+
+            try
+            {
+                IEnumerable<FeaturedMovie> query = await InternalCosmosDBSqlQuery<FeaturedMovie>(sql).ConfigureAwait(false);
+
+                foreach (FeaturedMovie f in query)
+                {
+                    // apply weighting
+                    for (int i = 0; i < f.Weight; i++)
+                    {
+                        list.Add(f.MovieId);
+                    }
+                }
+            }
+
+            // ignore error and return default
+            catch
+            {
+            }
+
+            // default to The Matrix
+            if (list.Count == 0)
+            {
+                list.Add("tt0133093");
+            }
+
+            return list;
+        }
+    }
+}
