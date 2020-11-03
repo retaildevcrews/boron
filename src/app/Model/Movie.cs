@@ -30,8 +30,11 @@ namespace CSE.Boron.Model
         public double Rating { get; set; }
         public long Votes { get; set; }
         public long TotalScore { get; set; }
+        [JsonPropertyName("textSearch")]
         public string TextSearch { get; set; }
+        [JsonPropertyName("genres")]
         public List<string> Genres { get; set; }
+        [JsonPropertyName("roles")]
         public List<Role> Roles { get; set; }
 
         /// <summary>
