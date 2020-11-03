@@ -121,6 +121,9 @@ namespace CSE.Boron.DataAccessLayer
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, $"CosmosCollection not set correctly {cosmosCollection}"));
             }
 
+            // TODO - uncomment this to use the larger movies3 collection
+            // cosmosCollection = "movies3";
+
             // open and test a new client / container
             CosmosClient c = new CosmosClient(cosmosUrl.AbsoluteUri, cosmosKey, cosmosDetails.CosmosClientOptions);
             Container con = c.GetContainer(cosmosDatabase, cosmosCollection);
