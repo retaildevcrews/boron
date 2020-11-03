@@ -44,23 +44,43 @@ namespace CSE.Boron.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMoviesAsync()
         {
-            Uri endpoint = new Uri("https://<YOUR SEARCH>.search.windows.net");
+            Uri endpoint = new Uri("https://<YOUR SEARCH NAME>.search.windows.net");
             AzureKeyCredential credential = new AzureKeyCredential("<YOUR API KEY>");
             SearchIndexClient indexClient = new SearchIndexClient(endpoint, credential);
             SearchClient srchclient = indexClient.GetSearchClient("<YOUR INDEX NAME>");
 
             var options = new SearchOptions()
             {
+                IncludeTotalCount = true, // If not set the property TotalCount is set as null
+                Size = 100, // PageSize
             };
 
             var response = await srchclient
                 .SearchAsync<Movie>("*", options)
                 .ConfigureAwait(false);
-            response.GetRawResponse().ContentStream.Position = 0;
-            var byteArray = new byte[response.GetRawResponse().ContentStream.Length];
-            var count = response.GetRawResponse().ContentStream.Read(byteArray, 0, (int)response.GetRawResponse().ContentStream.Length - 1);
-            string converted = Encoding.UTF8.GetString(byteArray, 0, byteArray.Length);
-            return Ok(response.Value);
+
+            // Below is the raw code to re-read the raw response
+            // response.GetRawResponse().ContentStream.Position = 0;
+            // var byteArray = new byte[response.GetRawResponse().ContentStream.Length];
+            // var count = response.GetRawResponse().ContentStream.Read(byteArray, 0, (int)response.GetRawResponse().ContentStream.Length - 1);
+            // string converted = Encoding.UTF8.GetString(byteArray, 0, byteArray.Length);
+
+            var searchResults = response.Value.GetResultsAsync();
+            int count = 1;
+            List<Movie> movies = new List<Movie>();
+            await foreach (SearchResult<Movie> resp in searchResults)
+            {
+                Movie doc = resp.Document;
+                var score = resp.Score;
+                movies.Add(resp.Document);
+                Console.WriteLine($"Count: {count}, Rid: {doc.Rid}, MovieId: {doc.MovieId}, Id: {doc.Id}, Score: {score}");
+                if (count++ == 50)
+                {
+                    break;
+                }
+            }
+
+            return Ok(movies);
 
             // search=tt0385887,tt0326965,tt0069049&searchFields=movieId
             // TODO - add Azure Search query here
