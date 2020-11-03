@@ -41,6 +41,9 @@ namespace CSE.Boron.DataAccessLayer
                 CosmosUrl = cosmosUrl.AbsoluteUri,
             };
 
+            // TODO - uncomment this to use the larger movies3 collection
+            // cosmosCollection = "movies3";
+
             // create the CosmosDB client and container
             cosmosDetails.Client = OpenAndTestCosmosClient(cosmosUrl, cosmosKey, cosmosDatabase, cosmosCollection).GetAwaiter().GetResult();
             cosmosDetails.Container = cosmosDetails.Client.GetContainer(cosmosDatabase, cosmosCollection);
@@ -120,9 +123,6 @@ namespace CSE.Boron.DataAccessLayer
             {
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, $"CosmosCollection not set correctly {cosmosCollection}"));
             }
-
-            // TODO - uncomment this to use the larger movies3 collection
-            // cosmosCollection = "movies3";
 
             // open and test a new client / container
             CosmosClient c = new CosmosClient(cosmosUrl.AbsoluteUri, cosmosKey, cosmosDetails.CosmosClientOptions);
