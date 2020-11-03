@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Azure.Search.Documents.Indexes;
 
 namespace CSE.Boron.Model
 {
@@ -11,15 +12,21 @@ namespace CSE.Boron.Model
     {
         public string Id { get; set; }
         public string PartitionKey { get; set; }
+        [SimpleField(IsKey = true, IsFilterable = true, IsSortable = true)]
         public string MovieId { get; set; }
+        [SimpleField(IsFilterable = true, IsSortable = true)]
         public string Type { get; set; }
+        [SimpleField(IsFilterable = true, IsSortable = true)]
         public string Title { get; set; }
+        [SimpleField(IsFilterable = true, IsSortable = true)]
         public int Year { get; set; }
         public int Runtime { get; set; }
         public double Rating { get; set; }
         public long Votes { get; set; }
         public long TotalScore { get; set; }
+        [SimpleField(IsFilterable = true, IsSortable = true)]
         public string TextSearch { get; set; }
+        [SimpleField(IsFilterable = true, IsSortable = true)]
         public List<string> Genres { get; set; }
         public List<Role> Roles { get; set; }
 
