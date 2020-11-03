@@ -97,8 +97,9 @@ namespace CSE.Boron.Controllers
             // Create an array of movie ids from the index search
             var movieIds = movies.Select(movie => movie.MovieId);
 
+            // return await ResultHandler.Handle(movies, );
             return await ResultHandler.Handle(
-                dal.GetMoviesAsync(movieQueryParameters), movieQueryParameters.GetMethodText(HttpContext), Constants.MoviesControllerException, logger)
+                Task<List<Movie>>.FromResult(movies), movieQueryParameters.GetMethodText(HttpContext), Constants.MoviesControllerException, logger)
                 .ConfigureAwait(false);
         }
     }
