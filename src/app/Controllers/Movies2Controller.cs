@@ -67,8 +67,9 @@ namespace CSE.Boron.Controllers
                 Size = 100, // PageSize
             };
 
+            options.SearchFields.Add("title");
             var response = await searchclient
-                .SearchAsync<Movie>("*", options)
+                .SearchAsync<Movie>(movieQueryParameters.Q.Trim(), options)
                 .ConfigureAwait(false);
             Console.WriteLine("Total count: {response.Value.TotalCount}");
 
@@ -93,9 +94,6 @@ namespace CSE.Boron.Controllers
                     break;
                 }
             }
-
-            // Create an array of movie ids from the index search
-            var movieIds = movies.Select(movie => movie.MovieId);
 
             // return await ResultHandler.Handle(movies, );
             return await ResultHandler.Handle(
