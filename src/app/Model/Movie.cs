@@ -11,6 +11,9 @@ namespace CSE.Boron.Model
 {
     public class Movie
     {
+        [JsonPropertyName("rid")]
+        [SimpleField(IsKey = true)]
+        public string Rid { get; set; }
         [JsonPropertyName("id")]
         public string Id { get; set; }
         [JsonPropertyName("partitionKey")]

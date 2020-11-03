@@ -44,8 +44,8 @@ namespace CSE.Boron.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMoviesAsync()
         {
-            Uri endpoint = new Uri("https://<YOUR SEARCH NAME>.search.windows.net");
-            AzureKeyCredential credential = new AzureKeyCredential("<PUT YOUR KEY>");
+            Uri endpoint = new Uri("https://<YOUR SEARCH>.search.windows.net");
+            AzureKeyCredential credential = new AzureKeyCredential("<YOUR API KEY>");
             SearchIndexClient indexClient = new SearchIndexClient(endpoint, credential);
             SearchClient srchclient = indexClient.GetSearchClient("<YOUR INDEX NAME>");
 
@@ -53,8 +53,6 @@ namespace CSE.Boron.Controllers
             {
             };
 
-            options.SearchFields.Add("movieId");
-            options.Select.Add("movieId");
             var response = await srchclient
                 .SearchAsync<Movie>("*", options)
                 .ConfigureAwait(false);
@@ -62,7 +60,7 @@ namespace CSE.Boron.Controllers
             var byteArray = new byte[response.GetRawResponse().ContentStream.Length];
             var count = response.GetRawResponse().ContentStream.Read(byteArray, 0, (int)response.GetRawResponse().ContentStream.Length - 1);
             string converted = Encoding.UTF8.GetString(byteArray, 0, byteArray.Length);
-            return Ok(response);
+            return Ok(response.Value);
 
             // search=tt0385887,tt0326965,tt0069049&searchFields=movieId
             // TODO - add Azure Search query here
