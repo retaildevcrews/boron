@@ -13,6 +13,7 @@ using Boron.Extensions;
 using CSE.Boron.DataAccessLayer;
 using CSE.Boron.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace CSE.Boron.Controllers
@@ -26,16 +27,18 @@ namespace CSE.Boron.Controllers
     {
         private readonly ILogger logger;
         private readonly IDAL dal;
+        private IConfigurationRoot config;
 
         /// <summary>
         ///  Constructor
         /// </summary>
         /// <param name="logger">log instance</param>
         /// <param name="dal">data access layer instance</param>
-        public Movies2Controller(ILogger<MoviesController> logger, IDAL dal)
+        public Movies2Controller(ILogger<MoviesController> logger, IDAL dal, IConfiguration config)
         {
             this.logger = logger;
             this.dal = dal;
+            this.config = config as IConfigurationRoot;
         }
 
         /// <summary>
@@ -50,10 +53,13 @@ namespace CSE.Boron.Controllers
                 throw new ArgumentNullException(nameof(movieQueryParameters));
             }
 
-            var endpoint = new Uri("https://<YOUR SEARCH NAME>.search.windows.net");
-            var credential = new AzureKeyCredential("<YOUR API KEY>");
-            var indexClient = new SearchIndexClient(endpoint, credential);
-            var searchclient = indexClient.GetSearchClient("<YOUR INDEX NAME>");
+            string endpointUrl = config.GetValue<string>(Constants.SearchEndpoint);
+            string key = config.GetValue<string>(Constants.SearchKey);
+            string index = config.GetValue<string>(Constants.SearchIndex);
+            Uri endpoint = new Uri(endpointUrl);
+            AzureKeyCredential credential = new AzureKeyCredential(key);
+            SearchIndexClient indexClient = new SearchIndexClient(endpoint, credential);
+            SearchClient searchclient = indexClient.GetSearchClient(index);
 
             var options = new SearchOptions()
             {
@@ -94,18 +100,6 @@ namespace CSE.Boron.Controllers
             return await ResultHandler.Handle(
                 dal.GetMoviesAsync(movieQueryParameters), movieQueryParameters.GetMethodText(HttpContext), Constants.MoviesControllerException, logger)
                 .ConfigureAwait(false);
-
-            // search=tt0385887,tt0326965,tt0069049&searchFields=movieId
-            // TODO - add Azure Search query here
-
-            // if (movieQueryParameters == null)
-            // {
-            //     throw new ArgumentNullException(nameof(movieQueryParameters));
-            // }
-
-            // return await ResultHandler.Handle(
-            //     dal.GetMoviesAsync(movieQueryParameters), movieQueryParameters.GetMethodText(HttpContext), Constants.MoviesControllerException, logger)
-            //     .ConfigureAwait(false);
         }
     }
 }

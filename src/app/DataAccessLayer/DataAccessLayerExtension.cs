@@ -20,14 +20,25 @@ namespace CSE.Boron.DataAccessLayer
         /// <param name="cosmosDatabase">Cosmos Database</param>
         /// <param name="cosmosCollection">Cosmos Collection</param>
         /// <returns>ServiceCollection</returns>
-        public static IServiceCollection AddDal(this IServiceCollection services, Uri cosmosUrl, string cosmosKey, string cosmosDatabase, string cosmosCollection)
+        public static IServiceCollection AddDal(
+            this IServiceCollection services,
+            Uri cosmosUrl,
+            string cosmosKey,
+            string cosmosDatabase,
+            string cosmosCollection,
+            string searchEndpoint,
+            string searchKey,
+            string searchIndex)
         {
             // add the data access layer as a singleton
             services.AddSingleton<IDAL>(new DAL(
                 cosmosUrl,
                 cosmosKey,
                 cosmosDatabase,
-                cosmosCollection));
+                cosmosCollection,
+                searchEndpoint,
+                searchKey,
+                searchIndex));
 
             return services;
         }

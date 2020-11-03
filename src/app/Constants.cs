@@ -19,6 +19,9 @@ namespace CSE.Boron
         public const string CosmosDatabase = "CosmosDatabase";
         public const string CosmosKey = "CosmosKey";
         public const string CosmosUrl = "CosmosUrl";
+        public const string SearchEndpoint = "SearchEndpoint";
+        public const string SearchKey = "SearchKey";
+        public const string SearchIndex = "SearchIndex";
 
         public const string AppInsightsKey = "AppInsightsKey";
 
