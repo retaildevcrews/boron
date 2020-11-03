@@ -58,6 +58,7 @@ namespace CSE.Boron.Controllers
             var response = await srchclient
                 .SearchAsync<Movie>("*", options)
                 .ConfigureAwait(false);
+            Console.WriteLine("Total count: {response.Value.TotalCount}");
 
             // Below is the raw code to re-read the raw response
             // response.GetRawResponse().ContentStream.Position = 0;
