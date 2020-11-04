@@ -46,6 +46,7 @@ namespace CSE.Boron.DataAccessLayer
             };
 
             Azure.Response<SearchResults<Movie>> response;
+            // We are only searching by the query parameter, this should be expanded
             if (!string.IsNullOrWhiteSpace(movieQueryParameters.Q))
             {
                 response = await searchclient
@@ -59,6 +60,7 @@ namespace CSE.Boron.DataAccessLayer
                     .ConfigureAwait(false);
             }
 
+            // Currently we are only searching by title, this needs to be changed as other search fields are implemented for searching
             options.SearchFields.Add("title");
             Console.WriteLine("Total count: {response.Value.TotalCount}");
 
