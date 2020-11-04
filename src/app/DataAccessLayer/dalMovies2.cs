@@ -108,10 +108,21 @@ namespace CSE.Boron.DataAccessLayer
                 Size = 100, // PageSize
             };
 
+            Azure.Response<SearchResults<Movie>> response;
+            if (!string.IsNullOrWhiteSpace(movieQueryParameters.Q))
+            {
+                response = await searchclient
+                    .SearchAsync<Movie>(movieQueryParameters.Q.Trim(), options)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                response = await searchclient
+                    .SearchAsync<Movie>("*", options)
+                    .ConfigureAwait(false);
+            }
+
             options.SearchFields.Add("title");
-            var response = await searchclient
-                .SearchAsync<Movie>(movieQueryParameters.Q.Trim(), options)
-                .ConfigureAwait(false);
             Console.WriteLine("Total count: {response.Value.TotalCount}");
 
             // Below is the raw code to re-read the raw response
