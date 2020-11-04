@@ -97,18 +97,10 @@ namespace CSE.Boron.DataAccessLayer
             //     sql += $" and m.id in ({movieIdsParameter}) ";
             // }
 
-            Uri endpoint = new Uri("https://boron-search.search.windows.net");
-            AzureKeyCredential credential = new AzureKeyCredential("C6BBFE20B9BD058CA1D36635F1BD9778");
+            Uri endpoint = new Uri(searchEndpoint);
+            AzureKeyCredential credential = new AzureKeyCredential(searchKey);
             SearchIndexClient indexClient = new SearchIndexClient(endpoint, credential);
-
-            // SearchClient srchclient = indexClient.GetSearchClient("boron3-index");
-            // string endpointUrl = config.GetValue<string>(Constants.SearchEndpoint);
-            // string key = config.GetValue<string>(Constants.SearchKey);
-            // string index = config.GetValue<string>(Constants.SearchIndex);
-            // Uri endpoint = new Uri(endpointUrl);
-            // AzureKeyCredential credential = new AzureKeyCredential(key);
-            // SearchIndexClient indexClient = new SearchIndexClient(endpoint, credential);
-            SearchClient searchclient = indexClient.GetSearchClient("boron3-index");
+            SearchClient searchclient = indexClient.GetSearchClient(searchIndex);
 
             var options = new SearchOptions()
             {
