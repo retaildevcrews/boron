@@ -46,6 +46,7 @@ namespace CSE.Boron.DataAccessLayer
             };
 
             Azure.Response<SearchResults<Movie>> response;
+
             // We are only searching by the query parameter, this should be expanded
             if (!string.IsNullOrWhiteSpace(movieQueryParameters.Q))
             {
