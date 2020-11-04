@@ -22,7 +22,8 @@ namespace CSE.Boron.DataAccessLayer
     {
         // select template for Movies
         private const string Movie2Select = "select m.id, m.partitionKey, m.movieId, m.type, m.textSearch, m.title, m.year, m.runtime, m.rating, m.votes, m.totalScore, m.genres, m.roles from m where m.type = 'Movie' ";
-        private const string Movie2OrderBy = " order by m.textSearch ASC, m.movieId ASC";
+
+        // private const string Movie2OrderBy = " order by m.textSearch ASC, m.movieId ASC";
         private const string Movie2Offset = " offset {0} limit {1}";
         private IConfigurationRoot config;
 
@@ -143,38 +144,38 @@ namespace CSE.Boron.DataAccessLayer
                 }
             }
 
-            sql += Movie2OrderBy + offsetLimit;
+            // sql += Movie2OrderBy + offsetLimit;
 
-            // Parameterize fields
-            QueryDefinition queryDefinition = new QueryDefinition(sql);
+            // // Parameterize fields
+            // QueryDefinition queryDefinition = new QueryDefinition(sql);
 
-            if (!string.IsNullOrWhiteSpace(movieQueryParameters.Q))
-            {
-                queryDefinition.WithParameter("@q", movieQueryParameters.Q);
-            }
+            // if (!string.IsNullOrWhiteSpace(movieQueryParameters.Q))
+            // {
+            //     queryDefinition.WithParameter("@q", movieQueryParameters.Q);
+            // }
 
-            if (!string.IsNullOrWhiteSpace(movieQueryParameters.ActorId))
-            {
-                queryDefinition.WithParameter("@actorId", movieQueryParameters.ActorId);
-            }
+            // if (!string.IsNullOrWhiteSpace(movieQueryParameters.ActorId))
+            // {
+            //     queryDefinition.WithParameter("@actorId", movieQueryParameters.ActorId);
+            // }
 
-            if (!string.IsNullOrWhiteSpace(movieQueryParameters.Genre))
-            {
-                // genreSearch is stored delimited with :
-                queryDefinition.WithParameter("@genre", "|" + movieQueryParameters.Genre + "|");
-            }
+            // if (!string.IsNullOrWhiteSpace(movieQueryParameters.Genre))
+            // {
+            //     // genreSearch is stored delimited with :
+            //     queryDefinition.WithParameter("@genre", "|" + movieQueryParameters.Genre + "|");
+            // }
 
-            if (movieQueryParameters.Year > 0)
-            {
-                queryDefinition.WithParameter("@year", movieQueryParameters.Year);
-            }
+            // if (movieQueryParameters.Year > 0)
+            // {
+            //     queryDefinition.WithParameter("@year", movieQueryParameters.Year);
+            // }
 
-            if (movieQueryParameters.Rating > 0)
-            {
-                queryDefinition.WithParameter("@rating", movieQueryParameters.Rating);
-            }
+            // if (movieQueryParameters.Rating > 0)
+            // {
+            //     queryDefinition.WithParameter("@rating", movieQueryParameters.Rating);
+            // }
 
-            return await InternalCosmosDBSqlQuery<Movie>(queryDefinition).ConfigureAwait(false);
+            return await Task<List<Movie>>.FromResult(movies).ConfigureAwait(false);
         }
 
         /// <summary>
