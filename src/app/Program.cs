@@ -207,7 +207,10 @@ namespace CSE.Boron
                         new Uri(config.GetValue<string>(Constants.CosmosUrl)),
                         config.GetValue<string>(Constants.CosmosKey),
                         config.GetValue<string>(Constants.CosmosDatabase),
-                        config.GetValue<string>(Constants.CosmosCollection));
+                        config.GetValue<string>(Constants.CosmosCollection),
+                        config.GetValue<string>(Constants.SearchEndpoint),
+                        config.GetValue<string>(Constants.SearchKey),
+                        config.GetValue<string>(Constants.SearchIndex));
 
                     // add the KeyVaultConnection via DI
                     services.AddKeyVaultConnection(kvClient, kvUrl);

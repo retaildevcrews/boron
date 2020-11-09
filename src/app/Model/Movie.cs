@@ -4,23 +4,37 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json.Serialization;
+using Azure.Search.Documents.Indexes;
 
 namespace CSE.Boron.Model
 {
     public class Movie
     {
+        [JsonPropertyName("rid")]
+        [SimpleField(IsKey = true)]
+        public string Rid { get; set; }
+        [JsonPropertyName("id")]
         public string Id { get; set; }
+        [JsonPropertyName("partitionKey")]
         public string PartitionKey { get; set; }
+        [JsonPropertyName("movieId")]
         public string MovieId { get; set; }
+        [JsonPropertyName("type")]
         public string Type { get; set; }
+        [JsonPropertyName("title")]
         public string Title { get; set; }
+        [JsonPropertyName("year")]
         public int Year { get; set; }
         public int Runtime { get; set; }
         public double Rating { get; set; }
         public long Votes { get; set; }
         public long TotalScore { get; set; }
+        [JsonPropertyName("textSearch")]
         public string TextSearch { get; set; }
+        [JsonPropertyName("genres")]
         public List<string> Genres { get; set; }
+        [JsonPropertyName("roles")]
         public List<Role> Roles { get; set; }
 
         /// <summary>

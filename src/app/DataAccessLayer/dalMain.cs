@@ -15,6 +15,9 @@ namespace CSE.Boron.DataAccessLayer
     public partial class DAL : IDAL
     {
         private CosmosConfig cosmosDetails;
+        private string searchEndpoint;
+        private string searchKey;
+        private string searchIndex;
 
         /// <summary>
         /// Data Access Layer Constructor
@@ -23,7 +26,7 @@ namespace CSE.Boron.DataAccessLayer
         /// <param name="cosmosKey">CosmosDB connection key</param>
         /// <param name="cosmosDatabase">CosmosDB Database</param>
         /// <param name="cosmosCollection">CosmosDB Collection</param>
-        public DAL(Uri cosmosUrl, string cosmosKey, string cosmosDatabase, string cosmosCollection)
+        public DAL(Uri cosmosUrl, string cosmosKey, string cosmosDatabase, string cosmosCollection, string searchEndpoint, string searchKey, string searchIndex)
         {
             if (cosmosUrl == null)
             {
@@ -41,8 +44,9 @@ namespace CSE.Boron.DataAccessLayer
                 CosmosUrl = cosmosUrl.AbsoluteUri,
             };
 
-            // TODO - uncomment this to use the larger movies3 collection
-            // cosmosCollection = "movies3";
+            this.searchEndpoint = searchEndpoint;
+            this.searchKey = searchKey;
+            this.searchIndex = searchIndex;
 
             // create the CosmosDB client and container
             cosmosDetails.Client = OpenAndTestCosmosClient(cosmosUrl, cosmosKey, cosmosDatabase, cosmosCollection).GetAwaiter().GetResult();
